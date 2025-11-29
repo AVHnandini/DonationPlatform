@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Donate — Donation Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>body{font-family:'Poppins',sans-serif}</style>
+  </head>
+  <body class="bg-slate-50">
+    <div id="site-navbar"></div>
+
+    <main class="max-w-2xl mx-auto p-6">
+      <h1 class="text-2xl font-semibold mb-4">Make a Donation</h1>
+      <div class="bg-white p-6 rounded-lg shadow">
+        <form id="donationForm" class="space-y-4">
+          <input id="donorName" placeholder="Full name" class="w-full p-3 border rounded" />
+          <input id="donorEmail" type="email" placeholder="Email" class="w-full p-3 border rounded" />
+          <input id="donationAmount" type="number" placeholder="Amount (INR)" class="w-full p-3 border rounded" />
+          <button id="donateBtn" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white px-4 py-2 rounded">Donate Now</button>
+        </form>
+      </div>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script type="module">
+      import { initSite } from './js/main.js';
+      initSite();
+
+      // payment logic imported
+      import './js/payment.js';
+
+      document.getElementById('donationForm').addEventListener('submit', e => {
+        e.preventDefault();
+        const amount = parseInt(document.getElementById('donationAmount').value);
+        if (!amount || amount <= 0) return alert('Please enter a valid amount');
+        window.startPayment(amount);
+      });
+    </script>
+  </body>
+</html>

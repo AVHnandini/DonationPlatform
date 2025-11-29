@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Donate</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body class="bg-slate-50">
+  <div id="site-navbar"></div>
+
+  <main class="min-h-screen flex items-center justify-center p-6">
+    <div class="bg-white p-8 rounded-lg shadow w-full max-w-2xl">
+      <h2 id="title" class="text-2xl font-semibold mb-4"></h2>
+      <p id="desc" class="text-slate-600 mb-4"></p>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+        <input id="amount" type="number" placeholder="Enter amount (₹)" class="p-3 border rounded md:col-span-2" />
+        <button id="donateBtn" class="bg-gradient-to-r from-pink-500 to-rose-500 text-white py-3 px-5 rounded">Donate</button>
+      </div>
+    </div>
+  </main>
+
+  <div id="site-footer"></div>
+
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script type="module">
+    import { initSite } from './js/main.js';
+    initSite();
+    import { db, auth } from './js/firebaseConfig.js';
+    import { doc, getDoc, updateDoc, collection, addDoc } from 'https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js';
+
+    // Local image mapping for campaigns
+    const LOCAL_IMAGES = {
+      'water': './images/campaign-water.jpg',
+      'education': './images/campaign-education.jpg',
+      'medical': './images/campaign-medical.jpg',
+      'environment': './images/campaign-environment.jpg'
+    };
+
+    const params = new URLSearchParams(window.location.search);
+    const campaignId = params.get('id');
+    const titleEl = document.getElementById('title');
+    const descEl = document.getElementById('desc');
+    const API_BASE_URL = 'http://localhost:5000';
+
+    async function loadCampaign() {
+      try {
+        const snap = await getDoc(doc(db, 'campaigns', campaignId));
+        if (snap.exists()) {
+          const c = snap.data();
+          titleEl.textContent = c.title;
+          descEl.textContent = c.description;
+        } else {
+          titleEl.textContent = 'Campaign';
+        }
+      } catch (err) {
+        titleEl.textContent = 'Campaign';
+      }
+    }
+
+    loadCampaign();
+
+    document.getElementById('donateBtn').addEventListener('click', async () => {
+      const amount = parseInt(document.getElementById('amount').value);
+      if (!amount || amount <= 0) return alert('Enter valid amount');
+
+      if (!auth.currentUser) {
+        alert('Please login first!');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      try {
+        const orderResponse = await fetch(`${API_BASE_URL}/payment/create-order`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount, currency: 'INR' })
+        });
+        if (!orderResponse.ok) throw new Error('Failed to create order');
+        const order = await orderResponse.json();
+
+        const options = {
+          key: 'rzp_test_5Fy7UkEjIgAlZ8',
+          amount: order.amount,
+          currency: order.currency,
+          name: 'Donation Platform',
+          description: titleEl.textContent,
+          order_id: order.id,
+          handler: async function(response) {
+            const verifyResponse = await fetch(`${API_BASE_URL}/payment/verify`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ razorpay_order_id: response.razorpay_order_id, razorpay_payment_id: response.razorpay_payment_id, razorpay_signature: response.razorpay_signature })
+            });
+            const verifyData = await verifyResponse.json();
+            if (verifyData.success) {
+              try {
+                await addDoc(collection(db, 'donations'), { userId: auth.currentUser.uid, campaignId, amount, date: new Date(), txn: response.razorpay_payment_id });
+                const campaignRef = doc(db, 'campaigns', campaignId);
+                const campaignSnap = await getDoc(campaignRef);
+                const c = campaignSnap.data();
+                await updateDoc(campaignRef, { collectedAmount: (c.collectedAmount || 0) + amount });
+              } catch (e) { /* ignore firestore errors */ }
+              window.location.href = 'success.html';
+            } else {
+              alert('Payment verification failed: ' + verifyData.message);
+            }
+          },
+          prefill: { name: auth.currentUser.displayName || localStorage.getItem('displayName') || 'Donor', email: auth.currentUser.email }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+      } catch (err) {
+        console.error(err);
+        alert('Payment failed: ' + err.message);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-md p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-blue-600">Dashboard</h1>
+    <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Logout</button>
+  </nav>
+
+  <section class="max-w-6xl mx-auto py-12 px-4">
+    <h2 class="text-3xl font-bold mb-6 text-gray-800">Your Donations</h2>
+    <div id="donationHistory" class="space-y-4">
+      <!-- Donation cards will load here -->
+    </div>
+  </section>
+
+  <script type="module">
+    import { auth, db } from './js/firebaseConfig.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
+    import { collection, query, where, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) return window.location.href = "login.html";
+
+      document.getElementById('logoutBtn').addEventListener('click', () => auth.signOut());
+
+      const donationDiv = document.getElementById('donationHistory');
+      const donationsQuery = query(collection(db, "donations"), where("userId", "==", user.uid));
+      const snapshot = await getDocs(donationsQuery);
+
+      snapshot.forEach(async (docSnap) => {
+        const data = docSnap.data();
+        const campaignSnap = await getDoc(doc(db, "campaigns", data.campaignId));
+        const campaign = campaignSnap.data();
+
+        donationDiv.innerHTML += `
+          <div class="bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition duration-300">
+            <h4 class="font-semibold text-gray-800">${campaign.title}</h4>
+            <p class="text-gray-600">Amount: ₹${data.amount}</p>
+            <p class="text-gray-500 text-sm">Date: ${data.date.toDate()}</p>
+          </div>
+        `;
+      });
+    });
+  </script>
+</body>
+</html>

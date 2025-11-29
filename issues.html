@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Report Issues — Donation Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-50">
+    <div id="site-navbar"></div>
+
+    <main class="max-w-6xl mx-auto p-6">
+      <h1 class="text-2xl font-semibold mb-4">Report an Issue</h1>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <form id="issueForm" class="md:col-span-2 bg-white p-6 rounded-lg shadow">
+          <div class="grid grid-cols-1 gap-4">
+            <input id="issueName" placeholder="Your name" class="p-3 border rounded" />
+            <input id="issueLocation" placeholder="Location" class="p-3 border rounded" />
+            <textarea id="issueDescription" rows="5" placeholder="Describe the issue" class="p-3 border rounded"></textarea>
+            <input id="issueImage" type="file" accept="image/*" />
+            <button class="mt-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded">Submit Issue</button>
+          </div>
+        </form>
+
+        <aside class="bg-white p-6 rounded-lg shadow">
+          <h3 class="font-semibold mb-3">Recent Issues</h3>
+          <div id="issuesList" class="space-y-4"></div>
+        </aside>
+      </div>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script type="module">
+      import { initSite } from './js/main.js';
+      import { issues as dummyIssues } from './js/data.js';
+      initSite();
+
+      const issuesList = document.getElementById('issuesList');
+      const form = document.getElementById('issueForm');
+
+      function renderIssue(item) {
+        const div = document.createElement('div');
+        div.className = 'border rounded p-3';
+        div.innerHTML = `<strong>${escapeHtml(item.name)}</strong> — <span class="text-sm text-slate-600">${escapeHtml(item.location)}</span><p class="mt-2 text-sm">${escapeHtml(item.description)}</p>`;
+        return div;
+      }
+
+      dummyIssues.forEach(i => issuesList.appendChild(renderIssue(i)));
+
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        const newIssue = {
+          id: 'iss' + Date.now(),
+          name: document.getElementById('issueName').value || 'Anonymous',
+          location: document.getElementById('issueLocation').value || '',
+          description: document.getElementById('issueDescription').value || '',
+        };
+        issuesList.prepend(renderIssue(newIssue));
+        form.reset();
+        alert('Issue posted — thank you for reporting.');
+      });
+
+      function escapeHtml(s){ if(!s) return ''; return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]); }
+    </script>
+  </body>
+</html>

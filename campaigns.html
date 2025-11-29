@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Campaigns — Donation Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-slate-50">
+    <div id="site-navbar"></div>
+
+    <main class="max-w-7xl mx-auto p-6">
+      <div class="mb-10">
+        <h1 class="text-3xl font-bold mb-2">Active Campaigns</h1>
+        <p class="text-slate-600">Support causes that matter. Choose a campaign and make your donation today.</p>
+      </div>
+
+      <!-- Filter / Search (optional) -->
+      <div class="mb-6 flex flex-wrap gap-3">
+        <button onclick="filterCampaigns('all')" class="px-4 py-2 rounded-full bg-purple-600 text-white">All</button>
+        <button onclick="filterCampaigns('water')" class="px-4 py-2 rounded-full bg-slate-200">Water</button>
+        <button onclick="filterCampaigns('education')" class="px-4 py-2 rounded-full bg-slate-200">Education</button>
+        <button onclick="filterCampaigns('medical')" class="px-4 py-2 rounded-full bg-slate-200">Medical</button>
+        <button onclick="filterCampaigns('environment')" class="px-4 py-2 rounded-full bg-slate-200">Environment</button>
+      </div>
+
+      <!-- Campaign Grid -->
+      <div id="campaignGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script type="module">
+      import { initSite, loadCampaigns } from './js/main.js';
+      import { campaigns as allCampaigns } from './js/data.js';
+      initSite();
+
+      let currentFilter = 'all';
+
+      function renderCampaignCard(campaign) {
+        const percentage = Math.round((campaign.collectedAmount / campaign.goalAmount) * 100);
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition duration-300';
+        card.innerHTML = `
+          <div class="relative overflow-hidden h-48">
+            <img src="${escapeHtml(campaign.imageURL)}" alt="${escapeHtml(campaign.title)}" class="w-full h-full object-cover">
+            <div class="absolute top-3 right-3 bg-blue-600 text-white px-3 py-1 rounded-full text-sm font-semibold">${percentage}%</div>
+          </div>
+          <div class="p-5">
+            <h3 class="text-lg font-semibold text-gray-800 mb-2">${escapeHtml(campaign.title)}</h3>
+            <p class="text-sm text-slate-600 mb-3 line-clamp-2">${escapeHtml(campaign.description)}</p>
+            
+            <!-- Progress bar -->
+            <div class="mb-3">
+              <div class="flex justify-between text-xs text-slate-600 mb-1">
+                <span>Raised: ₹${numberWithCommas(campaign.collectedAmount)}</span>
+                <span>Goal: ₹${numberWithCommas(campaign.goalAmount)}</span>
+              </div>
+              <div class="w-full bg-slate-200 rounded-full h-2">
+                <div class="bg-gradient-to-r from-purple-600 to-blue-600 h-2 rounded-full" style="width: ${percentage}%"></div>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="text-xs text-slate-500 mb-4">📍 ${campaign.beneficiaries || 'Many'} beneficiaries</div>
+
+            <!-- Donate button -->
+            <button onclick="window.location.href='campaign.html?id=${campaign.id}'" class="w-full bg-gradient-to-r from-pink-500 to-rose-500 text-white py-2 rounded-lg font-semibold hover:shadow-lg transition">
+              Donate Now
+            </button>
+          </div>
+        `;
+        return card;
+      }
+
+      function filterCampaigns(category) {
+        currentFilter = category;
+        const grid = document.getElementById('campaignGrid');
+        grid.innerHTML = '';
+        
+        const filtered = category === 'all' ? allCampaigns : allCampaigns.filter(c => c.category === category);
+        filtered.forEach(c => grid.appendChild(renderCampaignCard(c)));
+        
+        // Update button states
+        document.querySelectorAll('button[onclick*="filterCampaigns"]').forEach(btn => {
+          btn.classList.remove('bg-purple-600', 'text-white');
+          btn.classList.add('bg-slate-200');
+        });
+        event.target.classList.remove('bg-slate-200');
+        event.target.classList.add('bg-purple-600', 'text-white');
+      }
+
+      function numberWithCommas(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+      }
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>"']/g, c => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        })[c]);
+      }
+
+      // Initial load
+      filterCampaigns('all');
+
+      // Expose for inline onclick
+      window.filterCampaigns = filterCampaigns;
+    </script>
+  </body>
+</html>

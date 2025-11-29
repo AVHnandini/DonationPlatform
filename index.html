@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Donation Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style> :root{--gradient-from:#7c3aed;--gradient-to:#2563eb} body{font-family:'Poppins',Inter,sans-serif}</style>
+  </head>
+  <body class="bg-slate-50 text-slate-900">
+
+    <div id="site-navbar"></div>
+
+    <!-- HERO -->
+    <section class="relative overflow-hidden">
+      <div class="hero-slider h-80 md:h-screen w-full relative">
+        <div class="slide absolute inset-0 bg-cover bg-center" style="background-image: url('./images/hero-1.jpg')"></div>
+        <div class="slide absolute inset-0 bg-cover bg-center opacity-0" style="background-image: url('./images/hero-2.jpg')"></div>
+        <div class="slide absolute inset-0 bg-cover bg-center opacity-0" style="background-image: url('./images/hero-3.jpg')"></div>
+
+        <!-- Dark overlay for better text readability -->
+        <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/50"></div>
+
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-4">
+          <h1 class="text-4xl md:text-6xl font-bold text-white drop-shadow-xl mb-4">Your Help Can Change Lives</h1>
+          <p class="mt-3 text-white/95 max-w-3xl text-lg md:text-xl drop-shadow-lg">Every donation, no matter the size, brings hope to those struggling. Join thousands making a real difference today.</p>
+          <div class="mt-8 flex gap-4 justify-center flex-wrap">
+            <a href="campaigns.html" class="px-8 py-3 rounded-lg bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-lg font-semibold hover:shadow-xl transition">Donate Now</a>
+            <a href="issues.html" class="px-8 py-3 rounded-lg bg-white/90 text-purple-700 font-semibold hover:bg-white transition">Report Need</a>
+          </div>
+        </div>
+
+        <style>
+          .slide {
+            animation: none;
+          }
+          .hero-slider .slide:nth-child(1) { animation: fadeInOut 15s infinite; }
+          .hero-slider .slide:nth-child(2) { animation: fadeInOut 15s infinite 5s; }
+          .hero-slider .slide:nth-child(3) { animation: fadeInOut 15s infinite 10s; }
+          @keyframes fadeInOut {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+          }
+        </style>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="max-w-6xl mx-auto px-6 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        <div>
+          <h2 class="text-3xl font-semibold mb-4">About Our Mission</h2>
+          <p class="text-slate-700 mb-4">We connect compassionate donors like you with verified social causes and individuals facing real struggles. Every rupee donated goes directly to creating meaningful change in communities that need it most.</p>
+          <ul class="mt-4 space-y-3 text-slate-600">
+            <li class="flex items-start gap-3"><span class="text-purple-600 font-bold">✓</span> <span><strong>Verified Campaigns:</strong> Every campaign is thoroughly vetted for authenticity and impact</span></li>
+            <li class="flex items-start gap-3"><span class="text-purple-600 font-bold">✓</span> <span><strong>Transparent Tracking:</strong> See exactly how your donation helps</span></li>
+            <li class="flex items-start gap-3"><span class="text-purple-600 font-bold">✓</span> <span><strong>Direct Impact:</strong> Funds reach those in need with minimal overhead</span></li>
+          </ul>
+        </div>
+        <div class="rounded-xl overflow-hidden shadow-lg">
+          <img src="./images/about-mission.jpg" alt="Community helping people in need" class="w-full h-80 object-cover">
+        </div>
+      </div>
+    </section>
+
+    <!-- Active Campaigns -->
+    <section class="max-w-6xl mx-auto px-6 py-10">
+      <div class="flex items-center justify-between">
+        <h3 class="text-2xl font-semibold">Active Campaigns</h3>
+        <a href="campaigns.html" class="text-sm text-slate-600">View All →</a>
+      </div>
+      <div id="campaigns" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6"></div>
+    </section>
+
+    <!-- Contact -->
+    <section class="bg-white py-10">
+      <div class="max-w-4xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <h4 class="text-xl font-semibold">Get in touch</h4>
+          <p class="text-slate-600 mt-2">Questions or partnership inquiries? Send us a message.</p>
+          <div class="mt-6 text-sm text-slate-700">
+            <div class="mb-2">📧 hello@donationplatform.org</div>
+            <div class="mb-2">📞 +1 (555) 123-4567</div>
+            <div>📍 123 Charity Ave, City, Country</div>
+          </div>
+        </div>
+        <div>
+          <form id="contactForm" class="space-y-4 bg-slate-50 p-4 rounded-lg shadow-inner">
+            <input type="text" id="contactName" placeholder="Your name" class="w-full p-3 rounded border" />
+            <input type="email" id="contactEmail" placeholder="Your email" class="w-full p-3 rounded border" />
+            <textarea id="contactMessage" rows="4" placeholder="Message" class="w-full p-3 rounded border"></textarea>
+            <button class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded">Send Message</button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <div id="site-footer"></div>
+
+    <script type="module">
+      import { initSite, loadCampaigns } from './js/main.js';
+      initSite();
+      loadCampaigns('campaigns');
+
+      document.getElementById('contactForm').addEventListener('submit', e => {
+        e.preventDefault();
+        alert('Thanks! Your message has been received.');
+        e.target.reset();
+      });
+    </script>
+  </body>
+</html>

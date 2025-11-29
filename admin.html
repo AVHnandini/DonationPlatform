@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+  <nav class="bg-white shadow-md p-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-blue-600">Admin Panel</h1>
+    <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded">Logout</button>
+  </nav>
+
+  <section class="max-w-6xl mx-auto py-12 px-4">
+
+    <h2 class="text-3xl font-bold mb-6 text-gray-800">Add New Campaign</h2>
+    <form id="addCampaignForm" class="bg-white p-6 rounded-lg shadow-md space-y-4">
+      <input type="text" id="title" placeholder="Campaign Title" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+      <textarea id="description" placeholder="Description" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-600" required></textarea>
+      <input type="number" id="goalAmount" placeholder="Goal Amount" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+      <input type="text" id="imageURL" placeholder="Image URL" class="w-full p-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-600" required>
+      <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white py-3 px-6 rounded font-semibold transition duration-300">Add Campaign</button>
+    </form>
+
+    <h2 class="text-3xl font-bold mt-12 mb-6 text-gray-800">Existing Campaigns</h2>
+    <div id="campaignList" class="space-y-4"></div>
+
+    <h2 class="text-3xl font-bold mt-12 mb-6 text-gray-800">All Donations</h2>
+    <div id="donationList" class="space-y-2"></div>
+
+  </section>
+
+  <script type="module">
+    import { auth, db } from './js/firebaseConfig.js';
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-auth.js";
+    import { collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.1.0/firebase-firestore.js";
+
+    const ADMIN_UID = "YOUR_ADMIN_UID";
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user || user.uid !== ADMIN_UID) {
+        alert("Access Denied");
+        window.location.href = "login.html";
+      } else {
+        loadCampaigns();
+        loadDonations();
+      }
+    });
+
+    document.getElementById('logoutBtn').addEventListener('click', () => signOut(auth));
+
+    const addForm = document.getElementById('addCampaignForm');
+    addForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await addDoc(collection(db, "campaigns"), {
+        title: document.getElementById('title').value,
+        description: document.getElementById('description').value,
+        goalAmount: parseInt(document.getElementById('goalAmount').value),
+        collectedAmount: 0,
+        imageURL: document.getElementById('imageURL').value
+      });
+      alert("Campaign Added!");
+      addForm.reset();
+      loadCampaigns();
+    });
+
+    async function loadCampaigns() {
+      const campaignsDiv = document.getElementById('campaignList');
+      campaignsDiv.innerHTML = "";
+      const snapshot = await getDocs(collection(db, "campaigns"));
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        campaignsDiv.innerHTML += `
+          <div class="bg-white p-4 rounded shadow-md flex justify-between items-center hover:shadow-lg transition duration-300">
+            <div>
+              <h4 class="font-semibold text-gray-800">${data.title}</h4>
+              <p class="text-gray-600">Goal: ₹${data.goalAmount} | Collected: ₹${data.collectedAmount}</p>
+            </div>
+            <button onclick="deleteCampaign('${docSnap.id}')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">Delete</button>
+          </div>
+        `;
+      });
+    }
+
+    window.deleteCampaign = async (id) => {
+      if(confirm("Delete this campaign?")) {
+        await deleteDoc(doc(db, "campaigns", id));
+        alert("Deleted!");
+        loadCampaigns();
+      }
+    }
+
+    async function loadDonations() {
+      const donationDiv = document.getElementById('donationList');
+      donationDiv.innerHTML = "";
+      const snapshot = await getDocs(collection(db, "donations"));
+      snapshot.forEach(docSnap => {
+        const data = docSnap.data();
+        donationDiv.innerHTML += `<p class="bg-white p-2 rounded shadow-md">${data.userId} donated ₹${data.amount} to ${data.campaignId}</p>`;
+      });
+    }
+  </script>
+</body>
+</html>
