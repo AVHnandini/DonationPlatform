@@ -1,0 +1,28 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      ".gitignore",
+      "backend/**",
+      "node_modules/**",
+      ".git/**",
+      ".env",
+      ".env.example",
+      "*.md",
+      "DEPLOYMENT.md",
+      "QUICK_DEPLOY.md"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "functions": {
+    "source": "backend",
+    "runtime": "nodejs20"
+  }
+}
