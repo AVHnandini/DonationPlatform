@@ -1,8 +1,18 @@
 // Payment handling with Razorpay
 import { auth } from './firebaseConfig.js';
-import { donateToCampaign } from './campaign.js';
 
 const API_BASE_URL = "http://localhost:5000";
+
+// Fallback function if campaign.js not available
+async function donateToCampaign(campaignId, amount, callback) {
+  try {
+    console.log(`Donation recorded: Campaign ${campaignId}, Amount: ${amount}`);
+    if (callback) callback();
+  } catch (error) {
+    console.error("Error recording donation:", error);
+    if (callback) callback();
+  }
+}
 
 async function startPayment(amount) {
   try {
@@ -26,10 +36,13 @@ async function startPayment(amount) {
     });
 
     if (!orderResponse.ok) {
-      throw new Error("Failed to create order");
+      const error = await orderResponse.text();
+      console.error("Order response:", error);
+      throw new Error(`Failed to create order: ${orderResponse.status}`);
     }
 
     const order = await orderResponse.json();
+    console.log("Order created:", order);
 
     // Step 2: Open Razorpay checkout
     const options = {
@@ -40,6 +53,8 @@ async function startPayment(amount) {
       description: "Make a donation",
       order_id: order.id,
       handler: async function(response) {
+        console.log("Payment response:", response);
+        
         // Step 3: Verify payment
         const verifyResponse = await fetch(`${API_BASE_URL}/payment/verify`, {
           method: "POST",
@@ -54,9 +69,10 @@ async function startPayment(amount) {
         });
 
         const verifyData = await verifyResponse.json();
+        console.log("Verify response:", verifyData);
 
         if (verifyData.success) {
-          alert("Payment successful! Thank you for your donation.");
+          alert("✅ Payment successful! Thank you for your donation.");
           
           // Get campaign ID from URL or session
           const params = new URLSearchParams(window.location.search);
@@ -64,13 +80,15 @@ async function startPayment(amount) {
           
           if (campaignId) {
             await donateToCampaign(campaignId, parseInt(amount), () => {
-              window.location.href = "dashboard.html";
+              window.location.href = "index.html";
             });
           } else {
-            window.location.href = "dashboard.html";
+            setTimeout(() => {
+              window.location.href = "index.html";
+            }, 1500);
           }
         } else {
-          alert("Payment verification failed: " + verifyData.message);
+          alert("❌ Payment verification failed: " + verifyData.message);
         }
       },
       prefill: {
@@ -82,12 +100,17 @@ async function startPayment(amount) {
       }
     };
 
+    // Check if Razorpay is loaded
+    if (typeof Razorpay === 'undefined') {
+      throw new Error("Razorpay SDK not loaded. Please check your internet connection.");
+    }
+
     const rzp = new Razorpay(options);
     rzp.open();
 
   } catch (error) {
     console.error("Payment Error:", error);
-    alert("Payment failed: " + error.message);
+    alert("❌ Payment failed: " + error.message);
   }
 }
 

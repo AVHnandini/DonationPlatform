@@ -27,16 +27,25 @@
 
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script type="module">
+      // First import and initialize site
       import { initSite } from './js/main.js';
+      import './js/payment.js';
+      
+      // Initialize the site
       initSite();
 
-      // payment logic imported
-      import './js/payment.js';
-
+      // Then set up donation form
       document.getElementById('donationForm').addEventListener('submit', e => {
         e.preventDefault();
         const amount = parseInt(document.getElementById('donationAmount').value);
-        if (!amount || amount <= 0) return alert('Please enter a valid amount');
+        if (!amount || amount <= 0) {
+          alert('❌ Please enter a valid amount (minimum ₹1)');
+          return;
+        }
+        if (amount > 1000000) {
+          alert('❌ Amount too large. Maximum ₹10,00,000');
+          return;
+        }
         window.startPayment(amount);
       });
     </script>
