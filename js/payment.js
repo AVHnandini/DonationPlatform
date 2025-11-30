@@ -1,7 +1,9 @@
 // Payment handling with Razorpay
 import { auth } from './firebaseConfig.js';
 
-const API_BASE_URL = "http://localhost:5000";
+// Allow deployment-time override. Netlify frontend will set `window.API_BASE` to the
+// deployed Railway backend URL. Fallback to localhost for local testing.
+const API_BASE_URL = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : "http://127.0.0.1:5000";
 
 // Fallback function if campaign.js not available
 async function donateToCampaign(campaignId, amount, callback) {
