@@ -15,9 +15,10 @@ export function initNavbar() {
       </a>
       <nav class="hidden md:flex items-center gap-4" id="nav-links">
         <a href="index.html" class="hover:underline">Home</a>
+        <a href="campaigns.html" class="hover:underline">Campaigns</a>
+        <a href="payment.html" class="bg-pink-500 hover:bg-pink-600 px-4 py-2 rounded font-semibold transition">💳 Donate</a>
         <a href="issues.html" class="hover:underline">Issues</a>
         <a href="volunteers.html" class="hover:underline">Volunteers</a>
-        <a href="campaigns.html" class="hover:underline">Active Campaigns</a>
       </nav>
 
       <div id="nav-auth" class="flex items-center gap-3">
