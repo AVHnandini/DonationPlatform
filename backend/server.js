@@ -1,44 +1,30 @@
 import express from "express";
 import cors from "cors";
+import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
-import dotenv from "dotenv";
 
-// Fix for __dirname in ES Modules
+// Fix dirname in ES Modules
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load .env FIRST, before importing routes
+// Load environment variables
 dotenv.config({
-  path: path.join(__dirname, ".env"),
+  path: path.join(__dirname, ".env")
 });
-
-console.log("✓ Environment loaded");
-console.log("✓ RAZORPAY_KEY_ID:", process.env.RAZORPAY_KEY_ID);
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-console.log("✓ Middleware configured");
-
-// Routes - import AFTER dotenv is loaded
-import("./routes/payment.js")
-  .then(module => {
-    const paymentRoutes = module.default;
-    app.use("/payment", paymentRoutes);
-    console.log("✓ Payment routes loaded");
-  })
-  .catch(err => {
-    console.error("✗ Error loading payment routes:", err.message);
-  });
+// Routes
+import paymentRoutes from "./routes/payment.js";
+app.use("/payment", paymentRoutes);
 
 app.get("/", (req, res) => {
-  res.send("Donation Platform Backend Running");
+  res.send("Backend running successfully 🚀");
 });
 
-// Start Server
+// Render uses process.env.PORT
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`✓ Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
