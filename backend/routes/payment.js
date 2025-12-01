@@ -8,6 +8,9 @@ const router = express.Router();
 let razorpay;
 function getRazorpay() {
   if (!razorpay) {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+      throw new Error('Razorpay keys are not configured in environment');
+    }
     razorpay = new Razorpay({
       key_id: process.env.RAZORPAY_KEY_ID,
       key_secret: process.env.RAZORPAY_KEY_SECRET
@@ -23,8 +26,13 @@ router.post("/create-order", async (req, res) => {
   try {
     const { amount, currency } = req.body;
 
-    const order = await getRazorpay().orders.create({
-      amount: amount * 100, // amount in paise
+    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+      return res.status(400).json({ error: 'Invalid amount provided' });
+    }
+
+    const razorpay = getRazorpay();
+    const order = await razorpay.orders.create({
+      amount: Number(amount) * 100, // amount in paise
       currency: currency || "INR",
       payment_capture: 1
     });
@@ -32,8 +40,8 @@ router.post("/create-order", async (req, res) => {
     res.json(order);
 
   } catch (error) {
-    console.log("Order Error:", error);
-    res.status(500).json({ error: "Order creation failed" });
+    console.error("Order Error:", error && error.message ? error.message : error);
+    res.status(500).json({ error: "Order creation failed", detail: error.message || String(error) });
   }
 });
 
