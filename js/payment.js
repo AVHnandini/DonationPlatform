@@ -1,9 +1,11 @@
 // Payment handling with Razorpay
 import { auth } from './firebaseConfig.js';
 
-// Allow deployment-time override. Netlify frontend will set `window.API_BASE` to the
-// deployed Railway backend URL. Fallback to localhost for local testing.
-const API_BASE_URL = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : "http://127.0.0.1:5000";
+// Allow deployment-time override. Netlify/frontend will set `window.API_BASE` to the
+// deployed backend URL. Fallback to Render URL (or localhost for local testing).
+let API_BASE_URL = (typeof window !== 'undefined' && window.API_BASE) ? window.API_BASE : "https://donation-backend-4xev.onrender.com";
+// Normalize: remove trailing slash if present
+if (API_BASE_URL.endsWith('/')) API_BASE_URL = API_BASE_URL.slice(0, -1);
 
 // Fallback function if campaign.js not available
 async function donateToCampaign(campaignId, amount, callback) {
@@ -23,6 +25,15 @@ async function startPayment(amount) {
       alert("Please login to make a donation!");
       window.location.href = "login.html";
       return;
+    }
+
+    // Quick connectivity check to the backend root
+    try {
+      const ping = await fetch(`${API_BASE_URL}/`);
+      if (!ping.ok) throw new Error(`Backend root returned ${ping.status}`);
+    } catch (err) {
+      console.error('Backend connectivity check failed:', err);
+      throw new Error('Cannot reach payment backend. Check the API URL and server logs.');
     }
 
     // Step 1: Create order on backend
